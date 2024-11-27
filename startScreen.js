@@ -103,7 +103,24 @@ function drawMatrix() {
 
 
 
-
+if (canvas) {
+    canvas.addEventListener('click', () => {
+        console.log('Canvas clicked');
+        if (!document.getElementById('gameScript')) {
+            console.log('Loading game script');
+            const gameScript = document.createElement('script');
+            gameScript.id = 'gameScript';
+            gameScript.src = 'gamescript.js';
+            gameScript.onload = () => console.log('Game script loaded successfully');
+            gameScript.onerror = () => console.error('Failed to load game script');
+            document.body.appendChild(gameScript);
+        } else {
+            console.log('Game script already loaded');
+        }
+    });
+} else {
+    console.error('Canvas element not found');
+}
 
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

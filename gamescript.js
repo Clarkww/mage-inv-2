@@ -183,7 +183,7 @@ function renderHealthBar(ctx, player) {
     ctx.fillStyle = 'red';
     ctx.fillRect(canvas.width - 120, 12, 100, 20);
     ctx.fillStyle = 'green';
-    ctx.fillRect(canvas.width - 120, 12, player.health * 20, 20);
+    ctx.fillRect(canvas.width - 120, 12, player.health * 10, 20);
 }
 
 function updateHealthBar() {
@@ -200,7 +200,7 @@ let playerCollision =(player, objectColliededWith) => {
     let dx = player.x - objectColliededWith.x;
     let dy = player.y - objectColliededWith.y;
     let distance = Math.sqrt(dx * dx + dy * dy);
-    console.log('yes')
+    // console.log('yes')
     return distance < player.width / 2 + objectColliededWith.width / 2;
 
 }
@@ -1047,18 +1047,26 @@ let gameLoop = (timestamp) => {
 // requestAnimationFrame(gameLoop);
 
 canvas.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect()
-    const mouseX = event.clientX - rect.left
-    const mouseY = event.clientY - rect.top
+    handleMouseMove(event.clientX, event.clientY);
+});
+
+canvas.addEventListener('touchmove', (event) => {
+    const touch = event.touches[0];
+    handleMouseMove(touch.clientX, touch.clientY);
+});
+
+function handleMouseMove(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
 
     if (player.reverseControls) {
         // Reverse the movement direction
-        targetX = canvas.width - mouseX
-        targetY = canvas.height - mouseY
+        targetX = canvas.width - mouseX;
+        targetY = canvas.height - mouseY;
     } else {
         // Normal movement
-        targetX = mouseX
-        targetY = mouseY
+        targetX = mouseX;
+        targetY = mouseY;
     }
-})
-
+}
