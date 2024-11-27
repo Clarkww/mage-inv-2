@@ -36,7 +36,8 @@ let darknessOrbBitmap = new Image()
 // darknessOrbBitmap.src = './spell-imgs/darknessOrb.png'
 
 let scoreDiv = document.getElementById('score')
-
+scoreDiv.textContent = 0
+scoreDiv.style.display = 'block'
 
 
 let targetX = canvas.width / 2
@@ -48,11 +49,12 @@ let gameover = false
 let player = {
     x: 0,
     y: 0,
-    health: 5,
+    health: 10,
+    maxHealth: 10,
     width: 50,
     height: 50,
     color: 'red',
-    firerate: 700,
+    firerate: 900,
     spell: 'fireball',
     fireType: 'single',
     seekingSpells: false,
@@ -198,6 +200,7 @@ let playerCollision =(player, objectColliededWith) => {
     let dx = player.x - objectColliededWith.x;
     let dy = player.y - objectColliededWith.y;
     let distance = Math.sqrt(dx * dx + dy * dy);
+    console.log('yes')
     return distance < player.width / 2 + objectColliededWith.width / 2;
 
 }
@@ -251,20 +254,39 @@ function fireBullet() {
         let spell = {
             x: player.x,
             y: player.y,
-            width: 10,
-            height: 10,
+            width: 18,
+            height: 18,
             color: 'orange',
             speed: 5,
             directionX: 0,
             directionY: -1,
+            image: fireballBitmap
         };
         spells.push(spell);
     }
 }
 
-function renderSpells(ctx, spells) {
+const frameWidth = 16;
+const frameHeight = 16;
+const totalFrames = 6; // Since the height is 96px and each frame is 16px, we have 6 frames
+let currentFrame = 0;
+const frameDuration = 100; // Duration of each frame in milliseconds
+let lastFrameTime = 0;
+
+function renderSpells(ctx, spells, timestamp) {
+    if (timestamp - lastFrameTime > frameDuration) {
+        currentFrame = (currentFrame + 1) % totalFrames;
+        lastFrameTime = timestamp;
+    }
+
     for (let i = 0; i < spells.length; i++) {
-        ctx.drawImage(fireballBitmap, spells[i].x - spells[i].width / 2, spells[i].y - spells[i].height , spells[i].width, spells[i].height);
+        ctx.drawImage(
+            fireballBitmap,
+            0, currentFrame * frameHeight, // Source x, y
+            frameWidth, frameHeight, // Source width, height
+            spells[i].x - spells[i].width / 2, spells[i].y - spells[i].height, // Destination x, y
+            spells[i].width, spells[i].height // Destination width, height
+        );
     }
 }
 
@@ -287,7 +309,6 @@ function updateSpells() {
         }
 
         // Check for collisions with red aliens and remove the alien and add score
-
         for (let j = 0; j < redAliens.length; j++) {
             if (isColliding(spells[i], redAliens[j])) {
                 redAliens.splice(j, 1);
@@ -299,7 +320,6 @@ function updateSpells() {
         }
 
         // Check for collisions with purple aliens and remove the alien and add score
-
         for (let j = 0; j < purpleAliens.length; j++) {
             if (isColliding(spells[i], purpleAliens[j])) {
                 purpleAliens.splice(j, 1);
@@ -311,7 +331,6 @@ function updateSpells() {
         }
 
         // Check for collisions with mine ships and remove the alien and add score
-
         for (let j = 0; j < mineShips.length; j++) {
             if (isColliding(spells[i], mineShips[j])) {
                 mineShips.splice(j, 1);
@@ -321,8 +340,6 @@ function updateSpells() {
                 break; // Exit the inner loop since the spell is removed
             }
         }
-
-
 
         // Remove spells that are out of bounds
         if (spells[i].y < 0 || spells[i].y > canvas.height) {
@@ -827,7 +844,7 @@ function spawnMineShip() {
     if (mineShips.length < maxMineShips) {
         let mineShip = {
             x: Math.random() * canvas.width,
-            y: Math.min(Math.random() * canvas.height, 20),
+            y: Math.min(Math.random() * canvas.height, 500),
             // y: 10,
             width: 50,
             height: 50,
@@ -938,14 +955,14 @@ let updateMineShips = () => {
 
 
 
-let gameLoop = () => {
+let gameLoop = (timestamp) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     renderBackground(ctx);
 
 
     renderPlayer(ctx, player);
-    renderSpells(ctx, spells);
+    renderSpells(ctx, spells, timestamp);
     updateSpells();
 
 
@@ -973,7 +990,55 @@ let gameLoop = () => {
 
     renderHealthBar(ctx, player)
 
+    // playerCollision(player, mineShips)
 
+    mineShips.forEach((mineShip) => {
+        if (playerCollision(player, mineShip)) {
+            mineShips.splice(mineShip, 1)
+            player.health -= 1
+            updateHealthBar()
+        }
+    }
+    )
+
+    purpleAlienBullets.forEach((bullet) => {
+        if (playerCollision(player, bullet)) {
+            purpleAlienBullets.splice(bullet, 1)
+            player.health -= 1
+            updateHealthBar()
+        }
+    }
+
+    )
+
+    blueAlienBullets.forEach((bullet) => {
+        if (playerCollision(player, bullet)) {
+            blueAlienBullets.splice(bullet, 1)
+            player.health -= 1
+            updateHealthBar()
+        }
+    }
+    )
+    
+    redAlienBullets.forEach((bullet) => {
+        if (playerCollision(player, bullet)) {
+            redAlienBullets.splice(bullet, 1)
+            player.health -= 2
+            updateHealthBar()
+        }
+    }
+
+    )
+
+
+
+    if(gameover) {
+        ctx.font = '48px serif';
+        ctx.fillStyle = 'red';
+        ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+
+        return;
+    }
 
     requestAnimationFrame(gameLoop);
 };
