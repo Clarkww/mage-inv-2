@@ -1,9 +1,9 @@
-let canvas = document.getElementById('canvas')
+// let canvas = document.getElementById('canvas')
 
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 
-let ctx = canvas.getContext('2d')
+// let ctx = canvas.getContext('2d')
 
 
 let playerImage = new Image()
@@ -34,6 +34,9 @@ fireballBitmap.src = './spell-imgs/fireball.png'
 
 let darknessOrbBitmap = new Image()
 // darknessOrbBitmap.src = './spell-imgs/darknessOrb.png'
+
+let healthPowerUpImg = new Image()
+healthPowerUpImg.src = './img/health-powerup.png'
 
 let scoreDiv = document.getElementById('score')
 scoreDiv.textContent = 0
@@ -142,6 +145,8 @@ let mineShip = {
 
 let score = 0
 
+let powerUpChance = 0.1
+
 let stars = [];
 let numStars = 50;
 
@@ -203,6 +208,13 @@ let playerCollision =(player, objectColliededWith) => {
     // console.log('yes')
     return distance < player.width / 2 + objectColliededWith.width / 2;
 
+}
+
+let pickUpHealth = (player, healthPowerUp) => {
+    let dx = player.x - healthPowerUp.x;
+    let dy = player.y - healthPowerUp.y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < player.width / 2 + healthPowerUp.width / 2;
 }
 
 // render and update player
@@ -290,6 +302,66 @@ function renderSpells(ctx, spells, timestamp) {
     }
 }
 
+let healthPowerUps = [];
+
+// Function to create a health power-up
+// Function to create a health power-up
+function createHealthPowerUp(x, y) {
+    healthPowerUps.push({
+        x: x,
+        y: y,
+        width: 30,
+        height: 30,
+        speed: 1 // Speed at which the power-up moves down
+    });
+}
+
+// Function to update health power-ups
+function updateHealthPowerUps() {
+    for (let i = 0; i < healthPowerUps.length; i++) {
+        healthPowerUps[i].y += healthPowerUps[i].speed;
+
+        // Remove the power-up if it goes off-screen
+        if (healthPowerUps[i].y > canvas.height) {
+            healthPowerUps.splice(i, 1);
+            i--; // Adjust the index after removal
+        }
+    }
+}
+
+// Function to draw health power-ups
+function drawHealthPowerUps(ctx) {
+    for (let i = 0; i < healthPowerUps.length; i++) {
+        // Save the current context state
+        ctx.save();
+
+        // Set the shadow properties for the subtle glow effect
+        ctx.shadowColor = 'rgba(0, 255, 0, 0.3)'; // Subtle green glow
+        ctx.shadowBlur = 10;
+
+        // Draw the circular glow
+        ctx.beginPath();
+        ctx.arc(
+            healthPowerUps[i].x + healthPowerUps[i].width / 2,
+            healthPowerUps[i].y + healthPowerUps[i].height / 2,
+            healthPowerUps[i].width / 2,
+            0, Math.PI * 2
+        );
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.1)'; // More transparent green
+        ctx.fill();
+
+        // Draw the health power-up image
+        ctx.drawImage(
+            healthPowerUpImg,
+            healthPowerUps[i].x, healthPowerUps[i].y,
+            healthPowerUps[i].width, healthPowerUps[i].height
+        );
+
+        // Restore the context state
+        ctx.restore();
+    }
+}
 function updateSpells() {
     let spellsToRemove = [];
 
@@ -300,10 +372,15 @@ function updateSpells() {
         // Check for collisions with blue aliens and remove the alien and add score
         for (let j = 0; j < blueAliens.length; j++) {
             if (isColliding(spells[i], blueAliens[j])) {
+                const enemyX = blueAliens[j].x;
+                const enemyY = blueAliens[j].y;
                 blueAliens.splice(j, 1);
                 spellsToRemove.push(i);
                 j--;
                 updateScore(10);
+                if(Math.random() < powerUpChance) {
+                    createHealthPowerUp(enemyX, enemyY);
+                }
                 break; // Exit the inner loop since the spell is removed
             }
         }
@@ -955,6 +1032,9 @@ let updateMineShips = () => {
 
 
 
+
+
+
 let gameLoop = (timestamp) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -985,6 +1065,8 @@ let gameLoop = (timestamp) => {
     renderMineShips(ctx, mineShips)
     updateMineShips()
 
+    updateHealthPowerUps();
+    drawHealthPowerUps(ctx);
 
     updateStars();
 
@@ -1028,6 +1110,19 @@ let gameLoop = (timestamp) => {
         }
     }
 
+    )
+
+    healthPowerUps.forEach((powerUp) => {
+        if (playerCollision(player, powerUp)) {
+
+            if(player.health <= player.maxHealth) {
+                healthPowerUps.splice(powerUp, 1)
+                player.health += 1
+                updateHealthBar()
+
+            }
+        }
+    }
     )
 
 
