@@ -1146,6 +1146,7 @@ canvas.addEventListener('mousemove', (event) => {
 });
 
 canvas.addEventListener('touchmove', (event) => {
+    event.preventDefault()
     const touch = event.touches[0];
     handleMouseMove(touch.clientX, touch.clientY);
 });
