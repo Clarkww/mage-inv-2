@@ -143,6 +143,13 @@ let mineShip = {
 }
 
 
+
+const GameState = {
+    START_SCREEN: 'startScreen',
+    GAME_SCREEN: 'gameScreen',
+    GAME_OVER_SCREEN: 'gameOverScreen'
+};
+
 let score = 0
 
 let powerUpChance = 0.1
@@ -1029,7 +1036,9 @@ let updateMineShips = () => {
 }
 
 
-
+let renderGameScreen = (ctx, timestamp) => {
+    
+}
 
 
 
@@ -1138,8 +1147,12 @@ let gameLoop = (timestamp) => {
     requestAnimationFrame(gameLoop);
 };
 
-// Start the game loop
-// requestAnimationFrame(gameLoop);
+
+
+
+
+
+
 
 canvas.addEventListener('mousemove', (event) => {
     handleMouseMove(event.clientX, event.clientY);
