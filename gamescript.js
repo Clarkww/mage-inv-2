@@ -1,9 +1,9 @@
-// let canvas = document.getElementById('canvas')
+let canvas = document.getElementById('canvas')
 
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 
-// let ctx = canvas.getContext('2d')
+let ctx = canvas.getContext('2d')
 
 
 let playerImage = new Image()
@@ -147,8 +147,10 @@ let mineShip = {
 const GameState = {
     START_SCREEN: 'startScreen',
     GAME_SCREEN: 'gameScreen',
-    GAME_OVER_SCREEN: 'gameOverScreen'
+    GAME_OVER: 'gameOverScreen'
 };
+
+let currentState = GameState.START_SCREEN;
 
 let score = 0
 
@@ -1037,52 +1039,45 @@ let updateMineShips = () => {
 
 
 let renderGameScreen = (ctx, timestamp) => {
-    
-}
 
-
-
-
-
-let gameLoop = (timestamp) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    
     renderBackground(ctx);
-
-
+    
+    
     renderPlayer(ctx, player);
     renderSpells(ctx, spells, timestamp);
     updateSpells();
-
-
+    
+    
     renderBlueAliens(ctx, blueAliens)
     updateBlueAliens()
     renderBlueAlienBullets(ctx, blueAlienBullets)
     updateBlueAlienBullets()
-
+    
     renderRedAliens(ctx, redAliens)
     updateRedAliens()
     renderRedAlienBullets(ctx, redAlienBullets)
     updateRedAlienBullets()
-
-
+    
+    
     renderPurpleAliens(ctx, purpleAliens)
     updatePurpleAliens()
     renderPurpleAlienBullets(ctx, purpleAlienBullets)
     updatePurpleAlienBullets()
-
+    
     renderMineShips(ctx, mineShips)
     updateMineShips()
-
+    
     updateHealthPowerUps();
     drawHealthPowerUps(ctx);
-
+    
     updateStars();
-
+    
     renderHealthBar(ctx, player)
-
+    
     // playerCollision(player, mineShips)
-
+    console.log(`player health: ${player.health}`)
     mineShips.forEach((mineShip) => {
         if (playerCollision(player, mineShip)) {
             mineShips.splice(mineShip, 1)
@@ -1091,7 +1086,7 @@ let gameLoop = (timestamp) => {
         }
     }
     )
-
+    
     purpleAlienBullets.forEach((bullet) => {
         if (playerCollision(player, bullet)) {
             purpleAlienBullets.splice(bullet, 1)
@@ -1099,9 +1094,9 @@ let gameLoop = (timestamp) => {
             updateHealthBar()
         }
     }
-
+    
     )
-
+    
     blueAlienBullets.forEach((bullet) => {
         if (playerCollision(player, bullet)) {
             blueAlienBullets.splice(bullet, 1)
@@ -1118,31 +1113,308 @@ let gameLoop = (timestamp) => {
             updateHealthBar()
         }
     }
-
+    
     )
-
+    
     healthPowerUps.forEach((powerUp) => {
         if (playerCollision(player, powerUp)) {
-
+    
             if(player.health <= player.maxHealth) {
                 healthPowerUps.splice(powerUp, 1)
                 player.health += 1
                 updateHealthBar()
-
+    
             }
         }
     }
     )
 
-
-
-    if(gameover) {
-        ctx.font = '48px serif';
-        ctx.fillStyle = 'red';
-        ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
-
-        return;
+    if (player.health <= 0) {
+        console.log('game over')
+        currentState = 'gameOverScreen'
     }
+}
+
+
+
+// start screen code
+
+let title = new Image();
+title.src = './img/title.png';
+
+let mage = new Image();
+mage.src = './img/space-wizard.png';
+
+function drawTitle() {
+    const size = Math.min(canvas.width, canvas.height) * 0.5; // 50% of the smaller dimension
+    ctx.drawImage(title, (canvas.width - size) / 2, (canvas.height - size) / 2, size, size);
+}
+
+let starz = [];
+let starCount = 200;
+
+for (let i = 0; i < starCount; i++) {
+    starz.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1,
+        color: 'white',
+        speed: Math.random() * 0.4
+    });
+}
+
+function renderBackgroundStartScreen(ctx) {
+    // Draw black background
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw starz
+    ctx.fillStyle = 'white';
+    for (let i = 0; i < starz.length; i++) {
+        ctx.beginPath();
+        ctx.arc(starz[i].x, starz[i].y, starz[i].radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function updatestarz() {
+    for (let i = 0; i < starz.length; i++) {
+        starz[i].y += starz[i].speed;
+        if (starz[i].y > canvas.height) {
+            starz[i].y = 0;
+            starz[i].x = Math.random() * canvas.width;
+        }
+    }
+}
+
+const letters = 'mageinvaders';
+const fontSize = 20;
+const maxLetters = 25; // Reduce the number of falling letters
+let fallingLetters = [];
+
+// Initialize random letters
+for (let i = 0; i < maxLetters; i++) {
+    fallingLetters.push({
+        x: Math.random() * canvas.width, // Random x position
+        y: Math.random() * canvas.height, // Random initial y position
+        speed: Math.random() * 0.5 + 0.1, // Slow speed
+        char: letters.charAt(Math.floor(Math.random() * letters.length)), // Random letter
+        opacity: Math.random() * 0.3 + 0.2, // Low opacity
+        changeInterval: Math.floor(Math.random() * 100) + 50, // Random interval for changing the letter
+        changeCounter: 0 // Counter to track when to change the letter
+    });
+}
+
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; // Subtle fade effect
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = `${fontSize}px monospace`;
+    fallingLetters.forEach((letter) => {
+        ctx.fillStyle = `rgba(0, 255, 0, ${letter.opacity})`;
+        ctx.fillText(letter.char, letter.x, letter.y);
+
+        // Move the letter down
+        letter.y += letter.speed;
+
+        // Increment the change counter
+        letter.changeCounter++;
+
+        // Change the letter if the change counter exceeds the change interval
+        if (letter.changeCounter > letter.changeInterval) {
+            letter.char = letters.charAt(Math.floor(Math.random() * letters.length)); // New random letter
+            letter.changeCounter = 0; // Reset the change counter
+        }
+
+        // Reset letter if it moves off-screen
+        if (letter.y > canvas.height) {
+            letter.y = -fontSize; // Restart above the canvas
+            letter.x = Math.random() * canvas.width; // New random x position
+            letter.char = letters.charAt(Math.floor(Math.random() * letters.length)); // New random letter
+            letter.opacity = Math.random() * 0.3 + 0.2; // New random opacity
+            letter.speed = Math.random() * 0.5 + 0.1; // New random slow speed
+            letter.changeInterval = Math.floor(Math.random() * 100) + 50; // New random interval for changing the letter
+            letter.changeCounter = 0; // Reset the change counter
+        }
+    });
+}
+
+
+
+let mageX = 0;
+let mageY = 0;
+let mageSpeed = 0.1;
+let mageDirection = 1;
+let mageRotation = 0;
+let mageRotationSpeed = 0.02;
+
+function updateMage() {
+    mageX += mageSpeed * mageDirection;
+    mageY += mageSpeed * mageDirection;
+    mageRotation += mageRotationSpeed;
+
+    if (mageX > canvas.width - 60) {
+        mageDirection = -1;
+    } else if (mageX < 0) {
+        mageDirection = 1;
+    }
+}
+
+function drawMage() {
+    ctx.save();
+    ctx.translate(mageX, mageY);
+    ctx.rotate(mageRotation);
+    ctx.drawImage(mage, -30, -30, 60, 60);
+    ctx.restore();
+}
+
+
+
+
+let isAnimating = true;
+
+let drawStartScreenText = () => {
+    const buttonWidth = 200;
+    const buttonHeight = 50;
+    const buttonX = (canvas.width - buttonWidth) / 2;
+    const buttonY = canvas.height - 100;
+
+    // Draw button rectangle
+    ctx.fillStyle = 'white';
+    ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+    // Draw button text
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Start', buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
+}
+
+let drawCreditsButton = () => {
+    const buttonWidth = 200;
+    const buttonHeight = 50;
+    const buttonX = (canvas.width - buttonWidth) / 2;
+    const buttonY = canvas.height - 200;
+
+    // Draw button rectangle
+    ctx.fillStyle = 'white';
+    ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+    // Draw button text
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Credits', buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
+}
+
+let renderStartScreen = (ctx) => {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!isAnimating) return;
+    renderBackgroundStartScreen(ctx);
+    updatestarz()
+    drawMatrix()
+    drawTitle()
+    drawStartScreenText();
+    // drawCreditsButton();
+    drawMage();
+    updateMage();
+}
+
+// game over screen code
+
+let renderGameOverScreen = (ctx) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the background with black
+    ctx.font = '48px serif';
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+    gameRestartButton(ctx);
+}
+
+let gameRestartButton = (ctx) => {
+    const buttonWidth = 200;
+    const buttonHeight = 50;
+    const buttonX = (canvas.width - buttonWidth) / 2;
+    const buttonY = canvas.height / 2 + 60;
+
+    // Draw button rectangle
+    ctx.fillStyle = 'white';
+    ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+    // Draw button text
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Restart', buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
+
+    // Add event listener for button click
+    canvas.addEventListener('click', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        if (x >= buttonX && x <= buttonX + buttonWidth && y >= buttonY && y <= buttonY + buttonHeight) {
+            restartGame();
+        }
+    }, { once: true });
+}
+
+let restartGame = () => {
+    // Reset game state and variables
+    // player.health = player.maxHealth;
+    // player.x = canvas.width / 2;
+    // player.y = canvas.height - 50;
+    // player.spells = [];
+    // blueAliens = [];
+    // redAliens = [];
+    // purpleAliens = [];
+    // mineShips = [];
+    // blueAlienBullets = [];
+    // redAlienBullets = [];
+    // purpleAlienBullets = [];
+    // healthPowerUps = [];
+    // stars = [];
+    // isAnimating = true;
+
+    // score = 0;
+    // currentState = GameState.START_SCREEN;
+    // // Reset other game variables as needed
+
+    location.reload();
+    
+}
+
+
+
+let gameLoop = (timestamp) => {
+
+    switch (currentState) {
+        case GameState.START_SCREEN:
+            renderStartScreen(ctx);
+            break;
+        case GameState.GAME_SCREEN:
+            renderGameScreen(ctx, timestamp);
+            break;
+        case GameState.GAME_OVER:
+            renderGameOverScreen(ctx);
+            break;
+    }
+
+    // renderGameScreen(ctx, timestamp)
+
+    // if(gameover) {
+    //     ctx.font = '48px serif';
+    //     ctx.fillStyle = 'red';
+    //     ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+
+    //     return;
+    // }
 
     requestAnimationFrame(gameLoop);
 };
@@ -1151,7 +1423,20 @@ let gameLoop = (timestamp) => {
 
 
 
+canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
 
+    if (currentState === GameState.START_SCREEN) {
+        if (mouseX >= (canvas.width - 200) / 2 && mouseX <= (canvas.width - 200) / 2 + 200 &&
+            mouseY >= canvas.height - 100 && mouseY <= canvas.height - 50) {
+            currentState = GameState.GAME_SCREEN;
+            isAnimating = true;
+        }
+    }
+}
+)
 
 
 canvas.addEventListener('mousemove', (event) => {
