@@ -40,7 +40,7 @@ healthPowerUpImg.src = './img/health-powerup.png'
 
 let scoreDiv = document.getElementById('score')
 scoreDiv.textContent = 0
-scoreDiv.style.display = 'block'
+scoreDiv.style.display = 'none'
 
 
 let targetX = canvas.width / 2
@@ -57,7 +57,7 @@ let player = {
     width: 50,
     height: 50,
     color: 'red',
-    firerate: 900,
+    firerate: 700,
     spell: 'fireball',
     fireType: 'single',
     seekingSpells: false,
@@ -1433,6 +1433,7 @@ canvas.addEventListener('click', (event) => {
             mouseY >= canvas.height - 100 && mouseY <= canvas.height - 50) {
             currentState = GameState.GAME_SCREEN;
             isAnimating = true;
+            scoreDiv.style.display = 'block';
         }
     }
 }
@@ -1446,7 +1447,7 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('touchmove', (event) => {
     event.preventDefault()
     const touch = event.touches[0];
-    handleMouseMove(touch.clientX, touch.clientY);
+    handleMouseMove(touch.clientX, touch.clientY - 10 );
 });
 
 function handleMouseMove(clientX, clientY) {
