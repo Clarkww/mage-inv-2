@@ -1280,12 +1280,12 @@ let drawStartScreenText = () => {
     const buttonY = canvas.height - 100;
 
     // Draw button rectangle
-    ctx.fillStyle = 'white';
+    // ctx.fillStyle = 'white';
     ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
 
     // Draw button text
-    ctx.fillStyle = 'black';
-    ctx.font = '20px Arial';
+    ctx.fillStyle = 'limegreen';
+    ctx.font = '20px "Press Start 2P"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Start', buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
@@ -1447,7 +1447,7 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('touchmove', (event) => {
     event.preventDefault()
     const touch = event.touches[0];
-    handleMouseMove(touch.clientX, touch.clientY - 20 );
+    handleMouseMove(touch.clientX, touch.clientY - 30 );
 });
 
 function handleMouseMove(clientX, clientY) {
